@@ -1,14 +1,28 @@
-CC=nvcc
-EXEC=app
-SRC= $(wildcard src/*.cu)
-OBJ= $(SRC:.c=.o)
-LDFLAGS=-lsfml-graphics -lsfml-window -lsfml-system
+CXX = nvcc
+SRC_DIR = src
+OBJ_DIR = obj
+BIN_DIR = bin
+INC_DIR = include
 
-all: $(EXEC)
+EXEC_NAME = app
+CXXFLAGS = -I $(INC_DIR)
+LIBS = -lsfml-graphics -lsfml-window -lsfml-system
 
-$(EXEC): $(OBJ)
-	@$(CC) -o bin/$@ $^ $(LDFLAGS)
+SRC_FILES = $(wildcard $(SRC_DIR)/*.cu)
 
-%.o: %.c
-	@$(CC) -o obj/$@ -c $< $(CFLAGS)
+OBJ_FILES = $(patsubst $(SRC_DIR)/%.cu,$(OBJ_DIR)/%.o,$(SRC_FILES))
 
+all : $(EXEC_NAME)
+ 
+
+$(EXEC_NAME) : $(OBJ_FILES)
+	$(CXX) -g -o $(BIN_DIR)/$(EXEC_NAME) $(OBJ_FILES) $(LIBS)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.*
+	$(CXX) $(CXXFLAGS) -o $@ -c $< 
+
+
+.PHONY: clean
+
+clean :
+	rm $(BIN_DIR)/$(EXEC_NAME) $(OBJ_FILES)
