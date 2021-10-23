@@ -5,8 +5,8 @@ BIN_DIR = bin
 INC_DIR = include
 
 EXEC_NAME = app
-CXXFLAGS = -I $(INC_DIR)
-LIBS = -lsfml-graphics -lsfml-window -lsfml-system
+CXXFLAGS = -std=c++11 -I $(INC_DIR)
+LIBS = -lyaml-cpp -lsfml-graphics -lsfml-window -lsfml-system
 
 SRC_FILES = $(wildcard $(SRC_DIR)/*.cu)
 

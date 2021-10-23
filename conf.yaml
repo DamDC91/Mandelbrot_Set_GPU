@@ -1,0 +1,10 @@
+windowSizeX: 800
+windowSizeY: 800
+iteration: 400
+moveStep: 0.02
+zoomStep: 0.02
+frameRate: 30
+GPUblock: 1024
+red: true
+green: false
+blue: false
