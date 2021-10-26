@@ -17,4 +17,6 @@ void save(view *v, std::string fileName);
 
 view *load(std::string fileName);
 
+void capture(const unsigned char *pixels, int windowSizeX, int windowSizeY, std::string fileName);
+
 #endif

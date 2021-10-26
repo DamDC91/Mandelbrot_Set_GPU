@@ -4,60 +4,47 @@
 #include <yaml-cpp/yaml.h>
 #include <iostream>
 
-void readIntField(const YAML::Node &doc, int *field, std::string fieldName)
+
+template<typename T>
+void readField(const YAML::Node &doc, T *Field, std::string FieldName) 
 {
-    if(doc[fieldName])
+    if(doc[FieldName])
     {
         try {
-            *field = doc[fieldName].as<int>();
+            *Field = doc[FieldName].as<T>();
         }
-        catch (const YAML::TypedBadConversion<int> e) {
-            std::cerr << "invalid field " << fieldName << " : " << e.what() << std::endl;
+        catch (const YAML::TypedBadConversion<T> e) {
+            std::cerr << "invalid field " << FieldName << " : " << e.what() << std::endl;
         }
     }
 }
 
-void readDoubleField(const YAML::Node &doc, double *field, std::string fieldName)
-{
-    if(doc[fieldName])
-    {
-        try {
-            *field = doc[fieldName].as<double>();
-        }
-        catch (const YAML::TypedBadConversion<double> e) {
-            std::cerr << "invalid field " << fieldName << " : " << e.what() << std::endl;
-        }
-    }
+void check(double *f) {
+    if (*f < 0.0)
+        *f = 0.0;
+    if (*f > 1.0)
+        *f = 1.0;
 }
-
-void readBoolField(const YAML::Node &doc, bool *field, std::string fieldName)
-{
-    if(doc[fieldName])
-    {
-        try {
-            *field = doc[fieldName].as<bool>();
-        }
-        catch (const YAML::TypedBadConversion<bool> e) {
-            std::cerr << "invalid field " << fieldName << " : " << e.what() << std::endl;
-        }
-    }
-}
-
 
 conf loadConfiguration(std::string filename)
 {
     conf c = defaultConf;
     std::ifstream fin(filename);
     YAML::Node doc = YAML::Load(fin);
-    readIntField(doc, &c.windowSizeX, "windowSizeX");
-    readIntField(doc, &c.windowSizeY, "windowSizey");
-    readDoubleField(doc, &c.moveStep, "moveStep");
-    readDoubleField(doc, &c.zoomStep, "zoomStep");
-    readIntField(doc, &c.frameRate, "frameRate");
-    readIntField(doc, &c.GPUblock, "GPUblock");
-    readBoolField(doc, &c.red, "red");
-    readBoolField(doc, &c.blue, "green");
-    readBoolField(doc, &c.green, "blue");
+    readField<int>(doc, &c.windowSizeX, "windowSizeX");
+    readField<int>(doc, &c.windowSizeY, "windowSizeY");
+    readField<int>(doc, &c.iteration, "iteration"); 
+    readField<double>(doc, &c.moveStep, "moveStep");
+    readField<double>(doc, &c.zoomStep, "zoomStep");
+    readField<int>(doc, &c.frameRate, "frameRate");
+    readField<int>(doc, &c.GPUblock, "GPUblock");
+    readField<double>(doc, &c.red, "red");
+    readField<double>(doc, &c.green, "green");
+    readField<double>(doc, &c.blue, "blue");
+    check(&c.red);
+    check(&c.green);
+    check(&c.blue);
+
     return c;
     
 }

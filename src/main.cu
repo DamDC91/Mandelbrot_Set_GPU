@@ -14,27 +14,34 @@
 int main()
 {
     conf c = loadConfiguration("conf.yaml");
-
-
+    
     view current_view;
-    current_view.Xmin = -1.0;
-    current_view.Xmax = 1.0;
-    current_view.Ymin = -1.0;
-    current_view.Ymax = 1.0;
+    current_view.Xmin = -1.5 * (1 + c.windowSizeX/c.windowSizeY * (c.windowSizeX > c.windowSizeY));
+    current_view.Xmax = 0.5 * (1 + c.windowSizeX/c.windowSizeY * (c.windowSizeX > c.windowSizeY));
+    current_view.Ymin = -1.0 * (1 +c.windowSizeY/c.windowSizeX* (c.windowSizeX < c.windowSizeY));
+    current_view.Ymax = 1.0 * (1 + c.windowSizeY/c.windowSizeX* (c.windowSizeX < c.windowSizeY));
 
 
-    sf::RenderWindow window(sf::VideoMode(c.windowSizeX, c.windowSizeY),"Mandelbrot set");
+    sf::RenderWindow window(sf::VideoMode(c.windowSizeX, c.windowSizeY), "Mandelbrot set");
     sf::Texture texture;
     texture.create(c.windowSizeX, c.windowSizeY);
-    unsigned char *pixels = (unsigned char *) malloc(c.windowSizeX * c.windowSizeY * 4 * sizeof(char));
+    unsigned char *pixels = new unsigned char[c.windowSizeX * c.windowSizeY * 4];
 
     unsigned char *device_pixels;
-    cudaError_t error= cudaMalloc((void **)&device_pixels, c.windowSizeX * c.windowSizeY * 4 * sizeof(char));
+    cudaError_t error= cudaMalloc((void **) &device_pixels, c.windowSizeX * c.windowSizeY * 4 * sizeof(char));
+    if (error != cudaSuccess)
+        std::cerr<<"GPUassert : " << cudaGetErrorString(error) << std::endl;
+
+    unsigned char *device_colors;
+    error= cudaMalloc((void **)&device_colors, c.iteration);
+    if (error != cudaSuccess)
+        std::cerr<<"GPUassert : " << cudaGetErrorString(error) << std::endl;
 
     window.setFramerateLimit(c.frameRate);
 
-    init<<<1,c.iteration>>>(c.iteration, c.windowSizeX, c.red, c.green, c.blue);
-
+    int numBlock = (float)c.iteration / (float)c.GPUblock + 1;
+    init<<<numBlock,c.GPUblock>>>(c.iteration, c.windowSizeX, c.windowSizeY, c.red, c.green, c.blue, device_colors);
+    cudaDeviceSynchronize();
 
 
     while (window.isOpen())
@@ -79,19 +86,23 @@ int main()
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
         {
-            save(&current_view, "view.bin");
+            save(&current_view, ".view.bin");
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::L))
         {
-            view *l = load("view.bin");
+            view *l = load(".view.bin");
             if (l != nullptr)
                 current_view = *l;
         }
-        
-        int numBlock = c.windowSizeX * c.windowSizeY / c.GPUblock;
-        convergence<<<numBlock,c.GPUblock>>>(device_pixels, c.windowSizeX * c.windowSizeY, current_view);
-        error = cudaMemcpy(pixels,device_pixels, c.windowSizeX * c.windowSizeY * 4 * sizeof(char), cudaMemcpyDeviceToHost);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::C))
+        {
+            capture(pixels, c.windowSizeX, c.windowSizeY, "capture.ppm");
+        }
 
+        
+        numBlock = c.windowSizeX * c.windowSizeY / c.GPUblock + 1;
+        convergence<<<numBlock,c.GPUblock>>>(device_pixels, c.windowSizeX * c.windowSizeY, current_view, device_colors);
+        error = cudaMemcpy(pixels,device_pixels, c.windowSizeX * c.windowSizeY * 4 * sizeof(char), cudaMemcpyDeviceToHost);
         if (error != cudaSuccess)
             std::cerr<<"GPUassert : " << cudaGetErrorString(error) << std::endl;
 
@@ -101,6 +112,9 @@ int main()
         window.draw(sprite);
         window.display();
     }
+    cudaFree(device_colors);
+    cudaFree(device_pixels);
+    delete pixels;
     return 0;
 }
 

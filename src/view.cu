@@ -32,6 +32,7 @@ void save(view *v, std::string fileName)
     }
     wf.write((char *)v , sizeof(*v));
     wf.close();
+    std::cout << "view saved" << std::endl;
 }
 
 view *load(std::string fileName)
@@ -50,5 +51,23 @@ view *load(std::string fileName)
     char *buffer = new char[length];
     rf.read(buffer , length);
     rf.close();
+    std::cout << "view loaded" << std::endl;
     return (view *) buffer;
+}
+
+void capture(const unsigned char *pixels, int windowSizeX, int windowSizeY, std::string fileName)
+{
+    std::ofstream wf(fileName, std::ofstream::out | std::ofstream::binary);
+    if(!wf) 
+    {
+      std::cerr << "Cannot open file!" << std::endl;
+      return;
+    }
+    wf << "P6" << std::endl << windowSizeX << ' ' << windowSizeY << std::endl << "255" << std::endl;
+ 
+    for (auto i = 0; i < windowSizeX * windowSizeY * 4; i+=4)
+        wf << pixels[i] << pixels[i+1] << pixels[i+2];
+
+    wf.close();
+    std::cout << "captured" << std::endl;
 }
