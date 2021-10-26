@@ -1,6 +1,6 @@
-windowSizeX: 7680
-windowSizeY: 4320
-iteration: 3000
+windowSizeX: 800
+windowSizeY: 800
+iteration: 500
 moveStep: 0.015
 zoomStep: 0.015
 frameRate: 20
