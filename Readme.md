@@ -8,7 +8,7 @@ I am now highly satisfied of the performance reached even on my old graphic card
 
 demo
 
-![demo](./.media/demo.mp4)
+![demo](./media/media.gif) 
 
 ## Features
 The software allows us to move around the fractal using the `arrows key` and zoom in/out using the `+ key`/`- key`. 
