@@ -31,5 +31,5 @@ git clone https://github.com/DamDC91/Mandelbrot_Set_GPU
 ```bash
 make
 ```
-If your graphic is not detected it may be a driver issue.
+If your graphic card is not detected it may be a driver issue.
 
